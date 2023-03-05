@@ -9,6 +9,8 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
+import os
+
 import boto3
 import json
 from botocore.exceptions import ClientError
@@ -44,10 +46,6 @@ def get_secret():
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
 
@@ -65,7 +63,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework'
+    'django_extensions',
+    'rest_framework',
+    'recipes',
+    'hbl',
 ]
 
 MIDDLEWARE = [
@@ -98,12 +99,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'homepage_back.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {},
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),},
     'auth': {
         'ENGINE':'django.db.backends.postgresql_psycopg2',
         'NAME': 'auth',
@@ -167,6 +169,22 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHLIB_OAUTH_CLIENTS = {
+    'yahoo': {
+        'client_id': config('YAHOO_CLIENT_ID'),
+        'client_secret': config('YAHOO_CLIENT_SECRET'),
+        'access_token_url': 'https://api.login.yahoo.com/oauth2/request_auth',
+        'access_token_params': {'response_type': 'code', 'redirect_uri': config('YAHOO_REDIRECT_URI')},
+        'authorize_url': 'https://api.login.yahoo.com/oauth2/get_token',
+        'authorize_params': {'grant_type': 'authorization_code'},
+        'refresh_token_url': 'https://api.login.yahoo.com/oauth2/get_token',
+        'api_base_url': 'https://fantasysports.yahooapis.com/fantasy/v2/',
+        'client_kwargs': {},
+        'redirect_uri': config('YAHOO_REDIRECT_URI')
+    }
+}
+if DEBUG:
+    AUTHLIB_OAUTH_CLIENTS['yahoo']['redirect_uri'] = config('YAHOO_REDIRECT_URI_DEBUG')
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/

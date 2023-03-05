@@ -42,14 +42,14 @@ class MLBTeam(Enum):
 
 
 class Player(models.Model):
-
     firstname = models.CharField()
     lastname = models.CharField()
     team = models.CharField(choices=MLBTeam.choices(), null=True)
     position = models.CharField(null=True)
     yahoo_id = models.IntegerField(null=True)
-    hbl_team_id = models.ForeignKey('HblTeam', related_name='players', on_delete=models.SET_NULL, null=True)
-    status = models.CharField(null=True, default=None)
+    yahoo_status = models.CharField(null=True, default=None)
+    curr_hbl_team_id = models.ForeignKey('HblTeam', related_name='players', on_delete=models.SET_NULL, null=True)
+    prev_hbl_team_id = models.ForeignKey('HblTeam', related_name='prev_players', on_delete=models.SET_NULL, null=True)
 
 class Prospect(models.Model):
     player_id = models.ForeignKey('Player', related_name='prospects', on_delete=models.CASCADE, unique=True)
