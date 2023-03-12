@@ -9,189 +9,200 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
+import json
 import os
+from pathlib import Path
 
 import boto3
-import json
 from botocore.exceptions import ClientError
 from decouple import config
-from pathlib import Path
 
 
 # https://aws.amazon.com/developer/language/python/
 def get_secret():
-
-    secret_name = config('AWS_SECRET_NAME')
+    secret_name = config("AWS_SECRET_NAME")
     region_name = "us-west-1"
 
     # Create a Secrets Manager client
     session = boto3.session.Session()
-    client = session.client(
-        service_name='secretsmanager',
-        region_name=region_name
-    )
+    client = session.client(service_name="secretsmanager", region_name=region_name)
 
     try:
-        get_secret_value_response = client.get_secret_value(
-            SecretId=secret_name
-        )
+        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
     except ClientError as e:
         # For a list of exceptions thrown, see
         # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
         raise e
 
     # Decrypts secret using the associated KMS key.
-    return get_secret_value_response['SecretString']
+    return get_secret_value_response["SecretString"]
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True)
+DEBUG = config("DEBUG", default=True)
 
 ALLOWED_HOSTS = []
+
+SESSION_COOKIE_PATH = "/;HttpOnly"
+SESSION_COOKIE_DOMAIN = None
+
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django_extensions',
-    'rest_framework',
-    'recipes',
-    'hbl',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django_extensions",
+    "rest_framework",
+    "recipes",
+    "hbl",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'homepage_back.urls'
+ROOT_URLCONF = "homepage_back.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'homepage_back.wsgi.application'
+WSGI_APPLICATION = "homepage_back.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),},
-    'auth': {
-        'ENGINE':'django.db.backends.postgresql_psycopg2',
-        'NAME': 'auth',
-        'USER': config('AUTH_DB_USER'),
-        'PASSWORD': json.loads(get_secret())['password'],
-        'HOST':  config('AUTH_DB_URL'),
-        'PORT': '5432',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     },
-    'recipes': {
-        'ENGINE':'django.db.backends.postgresql_psycopg2',
-        'NAME': 'recipes',
-        'USER': config('RECIPE_DB_USER'),
-        'PASSWORD': json.loads(get_secret())['password'],
-        'HOST':  config('RECIPE_DB_URL'),
-        'PORT': '5432',
+    "auth": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "auth",
+        "USER": config("AUTH_DB_USER"),
+        "PASSWORD": json.loads(get_secret())["password"],
+        "HOST": config("AUTH_DB_URL"),
+        "PORT": "5432",
     },
-    'recipes_dev': {
-        'ENGINE':'django.db.backends.postgresql_psycopg2',
-        'NAME': 'receipe_db_dev', # NICE
-        'USER': config('RECIPE_DB_DEV_USER'),
-        'PASSWORD': json.loads(get_secret())['password'],
-        'HOST':  config('RECIPE_DB_DEV_URL'),
-        'PORT': '5432',
+    "recipes": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "recipes",
+        "USER": config("RECIPE_DB_USER"),
+        "PASSWORD": json.loads(get_secret())["password"],
+        "HOST": config("RECIPE_DB_URL"),
+        "PORT": "5432",
     },
-    'hbl': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'hbl',
-        'USER': config('HBL_DB_USER'),
-        'PASSWORD': json.loads(get_secret())['password'],
-        'HOST': config('HBL_DB_URL'),
-        'PORT': '5432'
+    "recipes_dev": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "receipe_db_dev",  # NICE
+        "USER": config("RECIPE_DB_DEV_USER"),
+        "PASSWORD": json.loads(get_secret())["password"],
+        "HOST": config("RECIPE_DB_DEV_URL"),
+        "PORT": "5432",
     },
-    'hbl_dev': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'hbl',
-        'USER': config('HBL_DB_DEV_USER'),
-        'PASSWORD': json.loads(get_secret())['password'],
-        'HOST': config('HBL_DB_DEV_URL'),
-        'PORT': '5432'
-    }
+    "hbl": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "hbl",
+        "USER": config("HBL_DB_USER"),
+        "PASSWORD": json.loads(get_secret())["password"],
+        "HOST": config("HBL_DB_URL"),
+        "PORT": "5432",
+    },
+    "hbl_dev": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "hbl",
+        "USER": config("HBL_DB_DEV_USER"),
+        "PASSWORD": json.loads(get_secret())["password"],
+        "HOST": config("HBL_DB_DEV_URL"),
+        "PORT": "5432",
+    },
 }
-DATABASE_ROUTERS = ['recipes.dbrouters.AuthRouter', 'recipes.dbrouters.RecipesRouter', 'hbl.dbrouters.HblRouter']
+DATABASE_ROUTERS = [
+    "recipes.dbrouters.AuthRouter",
+    "recipes.dbrouters.RecipesRouter",
+    "hbl.dbrouters.HblRouter",
+]
 if DEBUG:
-    DATABASE_ROUTERS = ['recipes.dbrouters.AuthRouter', 'recipes.dbrouters.RecipesDevRouter', 'hbl.dbrouters.HblDevRouter']
+    DATABASE_ROUTERS = [
+        "recipes.dbrouters.AuthRouter",
+        "recipes.dbrouters.RecipesDevRouter",
+        "hbl.dbrouters.HblDevRouter",
+    ]
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 AUTHLIB_OAUTH_CLIENTS = {
-    'yahoo': {
-        'client_id': config('YAHOO_CLIENT_ID'),
-        'client_secret': config('YAHOO_CLIENT_SECRET'),
-        'access_token_url': 'https://api.login.yahoo.com/oauth2/request_auth',
-        'access_token_params': {'response_type': 'code', 'redirect_uri': config('YAHOO_REDIRECT_URI')},
-        'authorize_url': 'https://api.login.yahoo.com/oauth2/get_token',
-        'authorize_params': {'grant_type': 'authorization_code'},
-        'refresh_token_url': 'https://api.login.yahoo.com/oauth2/get_token',
-        'api_base_url': 'https://fantasysports.yahooapis.com/fantasy/v2/',
-        'client_kwargs': {},
-        'redirect_uri': config('YAHOO_REDIRECT_URI')
+    "yahoo": {
+        "client_id": config("YAHOO_CLIENT_ID"),
+        "client_secret": config("YAHOO_CLIENT_SECRET"),
+        "access_token_url": "https://api.login.yahoo.com/oauth2/request_auth",
+        "access_token_params": {
+            "response_type": "code",
+            "redirect_uri": config("YAHOO_REDIRECT_URI"),
+        },
+        "authorize_url": "https://api.login.yahoo.com/oauth2/get_token",
+        "authorize_params": {"grant_type": "authorization_code"},
+        "refresh_token_url": "https://api.login.yahoo.com/oauth2/get_token",
+        "api_base_url": "https://fantasysports.yahooapis.com/fantasy/v2/",
+        "client_kwargs": {},
+        "redirect_uri": config("YAHOO_REDIRECT_URI"),
     }
 }
 if DEBUG:
-    AUTHLIB_OAUTH_CLIENTS['yahoo']['redirect_uri'] = config('YAHOO_REDIRECT_URI_DEBUG')
+    AUTHLIB_OAUTH_CLIENTS["yahoo"]["redirect_uri"] = config("YAHOO_REDIRECT_URI_DEBUG")
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -201,10 +212,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
